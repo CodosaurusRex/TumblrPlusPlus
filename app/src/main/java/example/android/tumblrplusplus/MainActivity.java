@@ -1,5 +1,6 @@
 package example.android.tumblrplusplus;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,13 +22,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.e("USER", "creating");
 // Create a new client
-
-        JumblrClient client = new JumblrClient(consumerKey, consumerSecret);
-
-        client.setToken(oAuthToken, oAuthSecret);
-        User user = client.user();
-        Log.e("USER", user.getName());
+        FetchTumblrsStuff fetch = new FetchTumblrsStuff();
+        fetch.execute();
         setContentView(R.layout.activity_main);
     }
 
@@ -51,5 +49,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public class FetchTumblrsStuff extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void...params) {
+
+            Log.e("USER", "fetching");
+            JumblrClient client = new JumblrClient(consumerKey, consumerSecret);
+            //client.setToken(oAuthToken, oAuthSecret);
+            client.setToken(
+                    "joOletjix2MLiK9vMGybboTH8bQh6WjAfE19YI1yzydhcBl9q7",
+                    "g5K2VnsRD08hxPGfK4FjdfBQdOMgmPGh7YLNt6KC91cCIqaXPE"
+            );
+            User user = client.user();
+            Log.e("USER", user.getName());
+            return (null);
+        }
+
+
     }
 }
