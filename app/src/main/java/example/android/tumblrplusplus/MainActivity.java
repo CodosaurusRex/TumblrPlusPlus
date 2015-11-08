@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -31,7 +33,11 @@ public class MainActivity extends AppCompatActivity {
 
     private final String oAuthSecret = "DCtLxt1ajr5yHfDcLkt7nMWzl9E8CquxEc85UbTbJJAq8Dkt6r";
 
+    private List<MyPost> ls;
 
+    private PostAdapter ps;
+
+    private RecyclerView recList;
     User user;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +48,23 @@ public class MainActivity extends AppCompatActivity {
         fetch.execute();
         // Set the text view as the activity layout
         setContentView(R.layout.activity_main);
-        TextView text = (TextView) findViewById(R.id.myText);
-        text.setText(Html.fromHtml("Iowa City IA (SPX) Nov 06, 2015<br/><img src=\"http://www.spxdaily.com/images-bg/march-2015-sun-cme-compress-mars-magnetosphere-bg.jpg\" hspace=\"5\" vspace=\"2\" align=\"right\" border=\"0\" width=\"160\" height=\"128\"/>\n" +
-                "    Mars has been all over the news, from the blockbuster finding of seasonal water on the Red Planet to the wildly successful film, The Martian. Now, researchers&ndash;including those at the University of Iowa&ndash;have learned more about what happened to the climate on Mars since it was a warm and watery planet billions of years ago.\n" +
-                "    The researchers announced on Thursday that NASA&rsquo;s MAVEN (Mars Atmos<br/><a href=\"http://www.marsdaily.com/reports/Martian_desiccation_999.html\">Full article</a>"));
-        text.setMovementMethod(LinkMovementMethod.getInstance());
+        initData();
+        initRec();
+    }
+
+    public void initRec(){
+
+        ps = new PostAdapter(ls);
+        recList = (RecyclerView) findViewById(R.id.cardList);
+        recList.setHasFixedSize(true);
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        llm.setOrientation(LinearLayoutManager.VERTICAL);
+        recList.setLayoutManager(llm);
+        recList.setAdapter(ps);
+    }
+
+    public void initData(){
+        ls = new ArrayList<MyPost>();
     }
 
     @Override
@@ -73,25 +91,29 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void openDash(List<Post> posts){
+        List<MyPost> ls = new ArrayList<MyPost>();
         try {
             Intent intent = new Intent(this, Dashboard.class);
             for (int i = 0; i < posts.size(); i++) {
-                Post post = (Post) posts.get(i);
-                String postStr = post.toString();
-                //Log.e("Post Type", post.getType());
+                Post post = posts.get(i);
+                Log.e("Post Type", post.getType());
                 //Log.e("Author", post.getAuthorId());
                 if (post.getType().equals("text")) {
                     String tit = ((TextPost) post).getTitle();
-                    Log.e("TEXTPOST", postStr);
-                    if (tit != null)
-                        Log.e("Text Post title ", tit);
-                    Log.e("Text Post Body ", ((TextPost) post).getBody());
-                    View thisLayout = findViewById(R.id.thisLayout);
-                    TextView text = new TextView(this);
-                    text.setText(((TextPost) post).getBody());
-                    text.setMovementMethod(LinkMovementMethod.getInstance());
+                    String bod = ((TextPost) post).getBody();
+                    if(tit != null)
+                    {
+                        Log.e("title", tit);
+                    }
+                    Log.e("body", bod);
+                    MyTextPost p = new MyTextPost(tit, bod);
+                    ls.add(p); //list is working
+                    ps.notifyDataSetChanged();
+                    //Log.e("List", ls.toString());
+                    ps = new PostAdapter(ls); //do we need to create a new postadapter each time idek does that defeat the purpose lol whatevs
+                    Log.e("Adapter", "" + (ps.getItemCount()));
+                    recList.setAdapter(ps);
                 }
-
             }
         }catch(Exception ex){
             Log.e("Error", ex.toString());
@@ -173,4 +195,14 @@ public class MainActivity extends AppCompatActivity {
 
 
 }
+/*
+
+Log.e("TEXTPOST", postStr);
+        if (tit != null)
+        Log.e("Text Post title ", tit);
+        Log.e("Text Post Body ", ((TextPost) post).getBody());
+        View thisLayout = findViewById(R.id.thisLayout);
+        TextView text = new TextView(this);
+        text.setText(((TextPost) post).getBody());
+        text.setMovementMethod(LinkMovementMethod.getInstance());*/
 
