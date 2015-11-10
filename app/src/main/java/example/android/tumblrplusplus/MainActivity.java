@@ -1,6 +1,8 @@
 package example.android.tumblrplusplus;
 
+import android.app.ActionBar;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,6 +18,7 @@ import android.widget.TextView;
 
 import com.tumblr.jumblr.JumblrClient;
 import com.tumblr.jumblr.exceptions.JumblrException;
+import com.tumblr.jumblr.types.PhotoPost;
 import com.tumblr.jumblr.types.Post;
 import com.tumblr.jumblr.types.TextPost;
 import com.tumblr.jumblr.types.User;
@@ -33,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final String oAuthSecret = "DCtLxt1ajr5yHfDcLkt7nMWzl9E8CquxEc85UbTbJJAq8Dkt6r";
 
-    private List<MyPost> ls;
+    private List<Post> ls;
 
     private PostAdapter ps;
 
@@ -54,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void initRec(){
 
-        ps = new PostAdapter(ls);
+        ps = new PostAdapter(ls, this);
         recList = (RecyclerView) findViewById(R.id.cardList);
         recList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
@@ -64,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initData(){
-        ls = new ArrayList<MyPost>();
+        ls = new ArrayList<Post>();
     }
 
     @Override
@@ -91,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void openDash(List<Post> posts){
-        List<MyPost> ls = new ArrayList<MyPost>();
+        List<Post> ls = new ArrayList<Post>();
         try {
             Intent intent = new Intent(this, Dashboard.class);
             for (int i = 0; i < posts.size(); i++) {
@@ -99,19 +102,19 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("Post Type", post.getType());
                 //Log.e("Author", post.getAuthorId());
                 if (post.getType().equals("text")) {
-                    String tit = ((TextPost) post).getTitle();
-                    String bod = ((TextPost) post).getBody();
-                    if(tit != null)
-                    {
-                        Log.e("title", tit);
-                    }
-                    Log.e("body", bod);
-                    MyTextPost p = new MyTextPost(tit, bod);
-                    ls.add(p); //list is working
+                    TextPost textpost = (TextPost) post;
+                    //Log.e("body", textpost.getBody());
+                    ls.add(textpost);
                     ps.notifyDataSetChanged();
-                    //Log.e("List", ls.toString());
-                    ps = new PostAdapter(ls); //do we need to create a new postadapter each time idek does that defeat the purpose lol whatevs
-                    Log.e("Adapter", "" + (ps.getItemCount()));
+                    ps = new PostAdapter(ls, this); //do we need to create a new postadapter each time idek does that defeat the purpose lol whatevs
+                    recList.setAdapter(ps);
+                }
+                if (post.getType().equals("photo")){
+                    PhotoPost photopost = (PhotoPost) post;
+                    Log.e("photopost", photopost.getPhotos().get(0).getOriginalSize().getUrl());
+                    ls.add(photopost);
+                    ps.notifyDataSetChanged();
+                    ps = new PostAdapter(ls, this); //do we need to create a new postadapter each time idek does that defeat the purpose lol whatevs
                     recList.setAdapter(ps);
                 }
             }
