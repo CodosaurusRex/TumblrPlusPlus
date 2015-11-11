@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void openDash(List<Post> posts){
-        List<Post> ls = new ArrayList<Post>();
+        //List<Post> ls = new ArrayList<Post>();
         try {
             Intent intent = new Intent(this, Dashboard.class);
             for (int i = 0; i < posts.size(); i++) {
@@ -104,17 +104,17 @@ public class MainActivity extends AppCompatActivity {
                 if (post.getType().equals("text")) {
                     TextPost textpost = (TextPost) post;
                     //Log.e("body", textpost.getBody());
-                    ls.add(textpost);
+                    this.ls.add(textpost);
                     ps.notifyDataSetChanged();
-                    ps = new PostAdapter(ls, this); //do we need to create a new postadapter each time idek does that defeat the purpose lol whatevs
+                    //ps = new PostAdapter(ls, this); //do we need to create a new postadapter each time idek does that defeat the purpose lol whatevs
                     recList.setAdapter(ps);
                 }
                 if (post.getType().equals("photo")){
                     PhotoPost photopost = (PhotoPost) post;
                     Log.e("photopost", photopost.getPhotos().get(0).getOriginalSize().getUrl());
-                    ls.add(photopost);
+                    this.ls.add(photopost);
                     ps.notifyDataSetChanged();
-                    ps = new PostAdapter(ls, this); //do we need to create a new postadapter each time idek does that defeat the purpose lol whatevs
+                    //ps = new PostAdapter(ls, this); //do we need to create a new postadapter each time idek does that defeat the purpose lol whatevs
                     recList.setAdapter(ps);
                 }
             }
