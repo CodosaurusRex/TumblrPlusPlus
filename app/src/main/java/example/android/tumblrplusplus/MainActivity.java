@@ -6,15 +6,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ImageView;
-
 import com.tumblr.jumblr.JumblrClient;
 import com.tumblr.jumblr.types.Blog;
+import com.tumblr.jumblr.types.PhotoPost;
 import com.tumblr.jumblr.types.Post;
+import com.tumblr.jumblr.types.TextPost;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e("test", "t"); //TODO DELETE
         super.onCreate(savedInstanceState);
         FetchTumblrsStuff fetch = new FetchTumblrsStuff();
         fetch.execute(); //get various pieces of info about blog
@@ -89,9 +88,13 @@ public class MainActivity extends AppCompatActivity {
             ps.updateBlogName(myBlogName); //point the blog name string to our post adapter to myBlogName so we can reblog to the correct blog
             for (int i = 0; i < posts.size(); i++) {
                 Post post = posts.get(i);
-                this.ls.add(post);
-                ps.notifyDataSetChanged(); //let the PostAdapter know that the list it takes from has changed
-                recList.setAdapter(ps); //set the Adapter again
+                if (post instanceof PhotoPost || post instanceof TextPost) {
+
+                    this.ls.add(post);
+                    ps.notifyDataSetChanged(); //let the PostAdapter know that the list it takes from has changed
+                    recList.setAdapter(ps); //set the Adapter again
+
+                }
             }
         } catch (Exception ex) {
             Log.e("Error", ex.toString());
