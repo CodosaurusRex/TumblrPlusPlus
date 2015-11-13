@@ -71,7 +71,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 myTitle.setText(Html.fromHtml(post.getTitle())); //set the title
                 myTitle.setTextSize(20); //make the title a bit bigger for emphasis
                 v.addView(myTitle);
-                myTitle.setLayoutParams(params); //TODO LOOK FOR WHETHER YOU NEED TO DO BETTER ON LAYOUT
+                myTitle.setLayoutParams(params);
             }
             TextView myBody = new TextView(context); //initialize a body textview
             myBody.setText(Html.fromHtml(post.getBody())); //set the body text TODO DISPLAY IMAGES INLINE
@@ -86,7 +86,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             for(int j = 0; j < photols.size(); j++){
                 imgs.add(new ImageView(context)); //for every single photo, add a single image View
                 v.addView(imgs.get(j)); //add the image view to the screen
-                PhotoSize targetSize = photols.get(j).getOriginalSize(); //set the target size to original size TODO SIZE TO FIT THE CARD
+                PhotoSize targetSize = photols.get(j).getOriginalSize(); //set the target size to original size (we'll scale them later)
                 String url = targetSize.getUrl(); //get the url of the photo of this size
                 String fileName = Uri.parse(url).getLastPathSegment(); //get last part of url to use as a filename to store photo
                 File file = new File(context.getFilesDir(), fileName); //make a file object in the context folder with the our filename
@@ -104,6 +104,9 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     new DownloadImageTask(imgs.get(j), context).execute(url);
                 }
 
+                imgs.get(j).setScaleType(ImageView.ScaleType.FIT_XY); //set images to fit scale
+                imgs.get(j).setAdjustViewBounds(true);//^^
+
             }
 
             TextView caption = new TextView(context); //make a new TextView for the caption
@@ -116,10 +119,20 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         Button b = new Button(context); //initialize our reblog button
         b.setText("reblog it yo");
         v.addView(b);
-        b.setOnClickListener(new View.OnClickListener()  {
-            public void onClick(View view){ //if you click the button, reblog it to the specified blog using async task
+        b.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) { //if you click the button, reblog it to the specified blog using async task
                 ReblogStuff rs = new ReblogStuff();
                 rs.execute(postList.get(i));
+            }
+        });
+
+        Button likeButton = new Button(context);
+        likeButton.setText("like it yo");
+        v.addView(likeButton);
+        b.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) { //if you click the button, reblog it to the specified blog using async task
+                LikeStuff likeStuff = new LikeStuff();
+                likeStuff.execute(postList.get(i));
             }
         });
 
@@ -159,6 +172,18 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         protected Void doInBackground(Post... params) {
             Post post = params[0]; //get the post
             post.reblog(blogName); //reblog it TODO MAKE THIS STOP CRASHING LOL D:
+            return null;
+        }
+    }
+
+
+    public class LikeStuff extends AsyncTask<Post, Void, Void>{
+
+
+        @Override
+        protected Void doInBackground(Post... params) {
+            Post post = params[0];
+            post.like();
             return null;
         }
     }
