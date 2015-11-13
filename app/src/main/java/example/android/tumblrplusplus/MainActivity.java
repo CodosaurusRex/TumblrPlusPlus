@@ -1,13 +1,17 @@
 package example.android.tumblrplusplus;
 
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
+
 import com.tumblr.jumblr.JumblrClient;
 import com.tumblr.jumblr.types.Blog;
 import com.tumblr.jumblr.types.Post;
@@ -34,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.e("test", "t"); //TODO DELETE
         super.onCreate(savedInstanceState);
         FetchTumblrsStuff fetch = new FetchTumblrsStuff();
         fetch.execute(); //get various pieces of info about blog
@@ -116,4 +121,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+
 }

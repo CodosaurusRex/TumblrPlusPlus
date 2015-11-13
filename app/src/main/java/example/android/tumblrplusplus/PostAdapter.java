@@ -73,11 +73,11 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 v.addView(myTitle);
                 myTitle.setLayoutParams(params);
             }
-            TextView myBody = new TextView(context); //initialize a body textview
-            myBody.setText(Html.fromHtml(post.getBody())); //set the body text TODO DISPLAY IMAGES INLINE
-            myBody.setMovementMethod(LinkMovementMethod.getInstance()); //make links clickable
-            v.addView(myBody);
-            myBody.setLayoutParams(params); //set the layout
+            List<View> ls = parseHTML(post.getBody());
+            for (int k = 0; k<ls.size();k++){
+                v.addView(ls.get(k));
+                ls.get(k).setLayoutParams(params);
+            }
         }
         if(postList.get(i) instanceof PhotoPost) { //if it's a photo...
             PhotoPost photopost = (PhotoPost) postList.get(i); //cast it as a photopost
@@ -88,31 +88,13 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 v.addView(imgs.get(j)); //add the image view to the screen
                 PhotoSize targetSize = photols.get(j).getOriginalSize(); //set the target size to original size (we'll scale them later)
                 String url = targetSize.getUrl(); //get the url of the photo of this size
-                String fileName = Uri.parse(url).getLastPathSegment(); //get last part of url to use as a filename to store photo
-                File file = new File(context.getFilesDir(), fileName); //make a file object in the context folder with the our filename
-                if (file.exists()) //if our file exists, get it, and turn it into a bitmap, display it
-                {
-                    try {
-                        FileInputStream inputStream = new FileInputStream(file);
-                        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                        imgs.get(j).setImageBitmap(bitmap);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-
-                } else { //if our file doesn't exist, download it, stick it in our folder, then set the imageview to it
-                    new DownloadImageTask(imgs.get(j), context).execute(url);
-                }
-
-                imgs.get(j).setScaleType(ImageView.ScaleType.FIT_XY); //set images to fit scale
-                imgs.get(j).setAdjustViewBounds(true);//^^
-
+                dispImage(url, imgs.get(j));
             }
-
-            TextView caption = new TextView(context); //make a new TextView for the caption
-            caption.setText(Html.fromHtml(photopost.getCaption())); //set text for caption
-            caption.setMovementMethod(LinkMovementMethod.getInstance()); //make caption clickable
-            v.addView(caption);
+            List<View> ls = parseHTML(photopost.getCaption());
+            for (int k = 0; k<ls.size();k++){
+                v.addView(ls.get(k));
+                ls.get(k).setLayoutParams(params);
+            }
 
         }
 
@@ -121,7 +103,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         v.addView(b);
         b.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { //if you click the button, reblog it to the specified blog using async task
-                Log.e("clicked","");
                 ReblogStuff rs = new ReblogStuff();
                 rs.execute(postList.get(i));
             }
@@ -173,7 +154,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         @Override
         protected Void doInBackground(Post... params) {
-            Log.e("reblogging", params[0].toString());
             Post post = params[0]; //get the post
             post.reblog(blogName); //reblog it TODO MAKE THIS STOP CRASHING LOL D:
             return null;
@@ -193,7 +173,47 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
 
+    public List<View> parseHTML(String html) {
+        ArrayList<View> ls = new ArrayList();
+        String[] parts = html.split("<img");
+        ls.add(new TextView(context)); //this is what you do with the first one, because the first tag won't be img
+        ((TextView) ls.get(ls.size()-1)).setText(Html.fromHtml(parts[0]));
+        for (int i = 1; i < parts.length; i++) {
+            String unprocessed[] = parts[i].split("/>", 2); //get unprocessed (contains the entire contents of img tag)
+            String unprocessedImage = unprocessed[0].split("src=")[1]; //splice out image with quotes
+            String processedImage = unprocessedImage.split("\"",3)[1]; //take the stuff inbetween quotes
+            ls.add(new ImageView(context));
+            dispImage(processedImage, (ImageView) ls.get(ls.size() - 1)); //bind the image
+            ls.add(new TextView(context));
+            ((TextView) ls.get(ls.size()-1)).setText(Html.fromHtml(unprocessed[1])); //set the second part to text, leave first part so we can parse it to image (should be above)
+            ((TextView) ls.get(ls.size()-1)).setMovementMethod(LinkMovementMethod.getInstance()); //make links clickable
+
+            }
+
+        return ls;
+    }
 
 
+    public void dispImage(String url, ImageView img){
+        String fileName = Uri.parse(url).getLastPathSegment(); //get last part of url to use as a filename to store photo
+        File file = new File(context.getFilesDir(), fileName); //make a file object in the context folder with the our filename
+        if (file.exists()) //if our file exists, get it, and turn it into a bitmap, display it
+        {
+            try {
+                FileInputStream inputStream = new FileInputStream(file);
+                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                img.setImageBitmap(bitmap);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+        } else { //if our file doesn't exist, download it, stick it in our folder, then set the imageview to it
+            new DownloadImageTask(img, context).execute(url);
+        }
+
+        img.setScaleType(ImageView.ScaleType.FIT_XY); //set images to fit scale
+        img.setAdjustViewBounds(true);//^^
+
+    }
 
 }
