@@ -121,20 +121,23 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         v.addView(b);
         b.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { //if you click the button, reblog it to the specified blog using async task
+                Log.e("clicked","");
                 ReblogStuff rs = new ReblogStuff();
                 rs.execute(postList.get(i));
             }
         });
 
+
         Button likeButton = new Button(context);
         likeButton.setText("like it yo");
         v.addView(likeButton);
-        b.setOnClickListener(new View.OnClickListener() {
+        likeButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { //if you click the button, reblog it to the specified blog using async task
                 LikeStuff likeStuff = new LikeStuff();
                 likeStuff.execute(postList.get(i));
             }
         });
+
 
     }
 
@@ -170,6 +173,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         @Override
         protected Void doInBackground(Post... params) {
+            Log.e("reblogging", params[0].toString());
             Post post = params[0]; //get the post
             post.reblog(blogName); //reblog it TODO MAKE THIS STOP CRASHING LOL D:
             return null;
