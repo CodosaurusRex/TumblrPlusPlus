@@ -1,28 +1,16 @@
 package example.android.tumblrplusplus;
 
-import android.app.ActionBar;
-import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
-
 import com.tumblr.jumblr.JumblrClient;
-import com.tumblr.jumblr.exceptions.JumblrException;
-import com.tumblr.jumblr.types.PhotoPost;
+import com.tumblr.jumblr.types.Blog;
 import com.tumblr.jumblr.types.Post;
-import com.tumblr.jumblr.types.TextPost;
-import com.tumblr.jumblr.types.User;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,32 +29,30 @@ public class MainActivity extends AppCompatActivity {
     private PostAdapter ps;
 
     private RecyclerView recList;
-    User user;
+
+    private String myBlogName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.e("USER", "creating");
-// Create a new client
         FetchTumblrsStuff fetch = new FetchTumblrsStuff();
-        fetch.execute();
-        // Set the text view as the activity layout
+        fetch.execute(); //get various pieces of info about blog
         setContentView(R.layout.activity_main);
-        initData();
-        initRec();
+        initData(); //initialize the Arraylist we will attach
+        initRec(myBlogName); //initialize the RecyclerView
     }
 
-    public void initRec(){
+    public void initRec(String blogName) {
 
-        ps = new PostAdapter(ls, this);
+        ps = new PostAdapter(ls, this, blogName);
         recList = (RecyclerView) findViewById(R.id.cardList);
-        recList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
-        recList.setLayoutManager(llm);
-        recList.setAdapter(ps);
+        recList.setLayoutManager(llm); //set our layout manager to a linearLayoutManager that is vertical
+        recList.setAdapter(ps); //attach our postadapter to our recycler view
     }
 
-    public void initData(){
+    public void initData() {
         ls = new ArrayList<Post>();
     }
 
@@ -93,35 +79,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void openDash(List<Post> posts){
-        //List<Post> ls = new ArrayList<Post>();
+    private void openDash(List<Post> posts) {
         try {
-            Intent intent = new Intent(this, Dashboard.class);
+            ps.updateBlogName(myBlogName); //point the blog name string to our post adapter to myBlogName so we can reblog to the correct blog
             for (int i = 0; i < posts.size(); i++) {
                 Post post = posts.get(i);
-                Log.e("Post Type", post.getType());
-                //Log.e("Author", post.getAuthorId());
-                if (post.getType().equals("text")) {
-                    TextPost textpost = (TextPost) post;
-                    //Log.e("body", textpost.getBody());
-                    this.ls.add(textpost);
-                    ps.notifyDataSetChanged();
-                    //ps = new PostAdapter(ls, this); //do we need to create a new postadapter each time idek does that defeat the purpose lol whatevs
-                    recList.setAdapter(ps);
-                }
-                if (post.getType().equals("photo")){
-                    PhotoPost photopost = (PhotoPost) post;
-                    Log.e("photopost", photopost.getPhotos().get(0).getOriginalSize().getUrl());
-                    this.ls.add(photopost);
-                    ps.notifyDataSetChanged();
-                    //ps = new PostAdapter(ls, this); //do we need to create a new postadapter each time idek does that defeat the purpose lol whatevs
-                    recList.setAdapter(ps);
-                }
+                this.ls.add(post);
+                ps.notifyDataSetChanged(); //let the PostAdapter know that the list it takes from has changed
+                recList.setAdapter(ps); //set the Adapter again
             }
-        }catch(Exception ex){
+        } catch (Exception ex) {
             Log.e("Error", ex.toString());
         }
-//        startActivity(intent);
     }
 
     //start classes and such
@@ -130,82 +99,21 @@ public class MainActivity extends AppCompatActivity {
     public class FetchTumblrsStuff extends AsyncTask<Void, Void, List<Post>> {
 
         @Override
-        protected List<Post> doInBackground(Void...params) {
-            Log.e("USER", "fetching");
+        protected List<Post> doInBackground(Void... params) {
             JumblrClient client = new JumblrClient(consumerKey, consumerSecret);
             client.setToken(oAuthToken, oAuthSecret);
-            Log.e("USER", "got token");
-            List<Post> posts = client.userDashboard();
-            Log.e("USER Dash", "do in back");
+            List<Post> posts = client.userDashboard(); //get out the dashboard posts to display
+            List<Blog> blogs = client.user().getBlogs();
+            myBlogName = blogs.get(0).getName(); //take out the first blog and set it to our blogName
             return (posts);
         }
 
 
-
-
         @Override
         protected void onPostExecute(List<Post> posts) {
-            Log.e("USER", "post");
-            openDash(posts);
+            openDash(posts); //open our dashboard with posts
 
         }
 
     }
-
-/*    public class Parser{
-        String target;
-        public Parser(String parseMe){
-
-            target = parseMe;
-
-        }
-
-        public ArrayList<myPost> parseText(String s){
-
-
-        }
-
-
-    }*/
-
-/*    public class myPost{
-        public myPost(String data){
-
-        }
-
-    }*/
-/*
-    public class myTextPost extends myPost{
-
-        String body;
-        String title;
-        public myTextPost(String givenbody, String gtitle){
-            super(body);
-            this.body = givenbody;
-            this.title = gtitle;
-        }
-
-        private ArrayList<String> split{
-            //was going to inherit string, but can't? oh well. clearly a java noob. rip.
-            ArrayList<String> ls= new ArrayList<String>();
-            ls.add("<t>" + title);
-            ls.add("");
-
-        }
-
-
-    }*/
-
-
 }
-/*
-
-Log.e("TEXTPOST", postStr);
-        if (tit != null)
-        Log.e("Text Post title ", tit);
-        Log.e("Text Post Body ", ((TextPost) post).getBody());
-        View thisLayout = findViewById(R.id.thisLayout);
-        TextView text = new TextView(this);
-        text.setText(((TextPost) post).getBody());
-        text.setMovementMethod(LinkMovementMethod.getInstance());*/
-

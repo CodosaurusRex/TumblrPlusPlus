@@ -21,8 +21,8 @@ import java.util.Arrays;
  * Created by chennosaurus on 11/8/15.
  */
 public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-    ImageView bmImage;
-    Context context;
+    ImageView bmImage; //the imageview we will add our downloaded bitmap to
+    Context context; //context of mainActivity
 
     public DownloadImageTask(ImageView bmImage, Context context) {
         this.bmImage = bmImage;
@@ -35,14 +35,12 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         FileOutputStream outputStream;
         try {
             InputStream in = new java.net.URL(urldisplay).openStream();
-            String fileName = Uri.parse(urldisplay).getLastPathSegment();
+            String fileName = Uri.parse(urldisplay).getLastPathSegment(); //our file name is the last segment of the url
             File file = new File(context.getFilesDir(), fileName);
-            bmp = BitmapFactory.decodeStream(in);
+            bmp = BitmapFactory.decodeStream(in); //set the bmp to decode our stream
             outputStream = new FileOutputStream(file);
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream); //compress our bitmap to the specified file
             outputStream.close();
-            File f = context.getFilesDir();
-            ArrayList<File> files = new ArrayList<File>(Arrays.asList(f.listFiles()));
 
         } catch (Exception e) {
             Log.e("Error", e.getMessage());
@@ -52,30 +50,10 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
     }
 
 
-/*    @Override
-    protected void onPreExecute() {
-        // TODO Auto-generated method stub
-        super.onPreExecute();
-        showProgressDialog();
-    }*/
-
     protected void onPostExecute(Bitmap result) {
-        //pDlg.dismiss();
-        bmImage.setImageBitmap(result);
+        bmImage.setImageBitmap(result); //set our imageView to hold the bitmap we downloaded
     }
 
-    public File getTempFile(Context context, String url) {
-        File file = null;
-        try {
-            String fileName = Uri.parse(url).getLastPathSegment();
-            Log.e("URL", url);
-            file = File.createTempFile(fileName, null, context.getCacheDir());
-        }
-        catch (IOException e) {
-                // Error while creating file
-            }
-            return file;
-        }
 
 }
 
